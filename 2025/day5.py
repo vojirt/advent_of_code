@@ -15,15 +15,20 @@ def part1(ranges, ingredients):
     return inrange
 
 def part2(ranges, ingredients):
-    ranges = ranges[np.argsort(ranges[:, 0]), :]
-    
-    for i in range(0, ranges.shape[0]):
-        if (ranges[i, 1] - ranges[i, 0]) < 0:
-            continue
-        inrange_start = (ranges[i+1:, 0] - ranges[i, 0]) / (ranges[i, 1] - ranges[i, 0] + 0.1)
-        inrange_start = ((inrange_start >= 0) * (inrange_start <= 1))
-        ranges[np.nonzero(inrange_start)[0]+i+1, 0] = ranges[i, 1] + 1
+    # ranges = ranges[np.argsort(ranges[:, 0]), :]
+    # for i in range(0, ranges.shape[0]):
+    #     if (ranges[i, 1] - ranges[i, 0]) < 0:
+    #         continue
+    #     inrange_start = (ranges[i+1:, 0] - ranges[i, 0]) / (ranges[i, 1] - ranges[i, 0] + 0.1)
+    #     inrange_start = ((inrange_start >= 0) * (inrange_start <= 1))
+    #     ranges[np.nonzero(inrange_start)[0]+i+1, 0] = ranges[i, 1] + 1
 
+    ranges = ranges[np.argsort(ranges[:, 0]), :]
+    inrange_start = (ranges[:, None, 0] - ranges[None, :, 0]) / (ranges[None, :, 1] - ranges[None, :, 0] + 0.1)
+    inrange_start = ((inrange_start >= 0) * (inrange_start <= 1))
+    inrange_start = np.tril(inrange_start, k=-1)
+    mask = inrange_start.sum(axis=-1) > 0
+    ranges[mask, 0] = np.max(inrange_start * (ranges[None, :, 1] + 1), axis=-1)[mask]
     ranges_size = (ranges[:, 1] - ranges[:, 0] + 1)
     return (ranges_size[ranges_size > 0]).sum()
 
